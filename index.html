@@ -3,331 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Undo/Redo Text Editor (Stack Demo)</title>
+    <title>Sleek Browser History (Stack Demo)</title>
     <style>
-        /* ===== CSS: COLORFUL AND PLAYFUL STYLING ===== */
-
-        /* Reset default margin and padding */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Reset and Body */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e28;
+            color: #e6e6f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Body with a fun gradient background */
-        body {
-            font-family: 'Comic Sans MS', 'Trebuchet MS', cursive, sans-serif;
-            background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb, #a18cd1);
-            background-size: 400% 400%;
-            animation: gradientShift 10s ease infinite;
+        /* Top Panel (Browser Bar) */
+        .browser-bar {
+            background-color: #28283c;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Buttons */
+        button {
+            background-color: #6496ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            font-family: 'Segoe UI', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #84acff;
+            transform: translateY(-2px);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            background-color: #46465a;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        /* Address Bar */
+        input {
+            flex: 1;
+            background-color: #1e1e28;
+            border: 1px solid #50506a;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            font-family: 'Segoe UI', sans-serif;
+            transition: border 0.2s ease;
+        }
+
+        input:focus {
+            border-color: #6496ff;
+        }
+
+        /* Main Display Area */
+        .display-area {
+            flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            padding: 20px;
+            background-color: #1e1e28;
         }
 
-        /* Animated gradient background */
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Main container — playful card */
-        .container {
-            background-color: #ffffff;
-            border: 4px dashed #ff6b9d;
-            border-radius: 20px;
-            padding: 25px;
-            width: 100%;
-            max-width: 720px;
-            box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
-            position: relative;
-        }
-
-        /* Fun title with gradient text */
         h1 {
-            font-size: 26px;
-            text-align: center;
-            margin-bottom: 20px;
-            background: linear-gradient(90deg, #ff6b9d, #c44dff, #4d9fff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        /* Button bar */
-        .button-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-        }
-
-        /* Playful button styling */
-        button {
-            padding: 12px 22px;
-            font-size: 15px;
-            font-family: 'Comic Sans MS', 'Trebuchet MS', cursive, sans-serif;
-            border: none;
-            border-radius: 30px;
+            font-size: 48px;
             color: #ffffff;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: bold;
-            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
-            flex: 1;
-            min-width: 120px;
-        }
-
-        /* Undo button — pink */
-        #undoBtn {
-            background: linear-gradient(135deg, #ff6b9d, #ff3d7f);
-        }
-
-        /* Redo button — purple */
-        #redoBtn {
-            background: linear-gradient(135deg, #c44dff, #9b2fff);
-        }
-
-        /* Clear button — orange */
-        #clearBtn {
-            background: linear-gradient(135deg, #ffa54d, #ff7a1a);
-        }
-
-        /* Button hover (when mouse is over) */
-        button:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 0 rgba(0, 0, 0, 0.15);
-        }
-
-        /* Button click effect */
-        button:active:not(:disabled) {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
-        }
-
-        /* Button disabled (grayed out) */
-        button:disabled {
-            background: #cccccc;
-            color: #f5f5f5;
-            cursor: not-allowed;
-            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
-            transform: none;
-        }
-
-        /* Text area — playful */
-        textarea {
-            width: 100%;
-            height: 260px;
-            padding: 18px;
-            font-size: 16px;
-            font-family: 'Comic Sans MS', 'Trebuchet MS', cursive, sans-serif;
-            border: 3px solid #a18cd1;
-            border-radius: 15px;
-            resize: vertical;
-            outline: none;
-            line-height: 1.6;
-            background-color: #fefcff;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        /* Text area focus */
-        textarea:focus {
-            border-color: #ff6b9d;
-            box-shadow: 0 0 12px rgba(255, 107, 157, 0.5);
-            background-color: #ffffff;
-        }
-
-        /* Counter area — colorful */
-        .counter {
-            margin-top: 15px;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-        }
-
-        /* Character counter — blue */
-        #charCount {
-            color: #4d9fff;
-            background: #e6f2ff;
-            padding: 6px 14px;
-            border-radius: 20px;
-        }
-
-        /* Word counter — green */
-        #wordCount {
-            color: #2ecc71;
-            background: #e6fff0;
-            padding: 6px 14px;
-            border-radius: 20px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
     </style>
 </head>
 <body>
 
-    <!-- ===== HTML: THE STRUCTURE ===== -->
-    <div class="container">
-        <h1>✨ Undo/Redo Text Editor ✨</h1>
-
-        <!-- Button bar -->
-        <div class="button-bar">
-            <button id="undoBtn" disabled>↩️ Undo</button>
-            <button id="redoBtn" disabled>↪️ Redo</button>
-            <button id="clearBtn">🗑️ Clear</button>
-        </div>
-
-        <!-- Text area -->
-        <textarea id="editor" placeholder="Start typing here... ✏️"></textarea>
-
-        <!-- Counter -->
-        <div class="counter">
-            <span id="charCount">Characters: 0</span>
-            <span id="wordCount">Words: 0</span>
-        </div>
+    <!-- Browser Controls -->
+    <div class="browser-bar">
+        <button id="backBtn" disabled>◀ Back</button>
+        <button id="forwardBtn" disabled>Forward ▶</button>
+        <input type="text" id="addressBar" value="Home" placeholder="Type a page and press Enter...">
     </div>
 
-    <!-- ===== JAVASCRIPT: THE LOGIC (UNCHANGED) ===== -->
+    <!-- Webpage Display -->
+    <div class="display-area">
+        <h1 id="pageDisplay">Welcome to Home</h1>
+    </div>
+
     <script>
-        // ===== STACK IMPLEMENTATION =====
-        // A Stack is a Last-In-First-Out (LIFO) data structure.
-        // We use JavaScript arrays as stacks: push() to add, pop() to remove.
+        // ==========================================
+        // 1. STACK IMPLEMENTATION (JavaScript Arrays)
+        // ==========================================
+        const backStack = [];
+        const forwardStack = [];
+        let currentPage = "Home";
 
-        // The undo stack holds previous states of the text
-        const undoStack = [];
+        // HTML Elements
+        const backBtn = document.getElementById("backBtn");
+        const forwardBtn = document.getElementById("forwardBtn");
+        const addressBar = document.getElementById("addressBar");
+        const pageDisplay = document.getElementById("pageDisplay");
 
-        // The redo stack holds undone states (for redo)
-        const redoStack = [];
-
-        // ===== GET HTML ELEMENTS =====
-        const editor = document.getElementById("editor");
-        const undoBtn = document.getElementById("undoBtn");
-        const redoBtn = document.getElementById("redoBtn");
-        const clearBtn = document.getElementById("clearBtn");
-        const charCount = document.getElementById("charCount");
-        const wordCount = document.getElementById("wordCount");
-
-        // ===== VARIABLES =====
-        // Holds the last saved state of the text
-        let lastState = "";
-
-        // ===== FUNCTION: UPDATE COUNTERS =====
-        function updateCounters() {
-            // Count characters (including spaces)
-            const chars = editor.value.length;
-            charCount.textContent = "Characters: " + chars;
-
-            // Count words (split by spaces, filter empty strings)
-            const words = editor.value.trim() === "" ? 0 : editor.value.trim().split(/\s+/).length;
-            wordCount.textContent = "Words: " + words;
+        // ==========================================
+        // 2. UPDATE UI
+        // ==========================================
+        function updateUI() {
+            pageDisplay.textContent = "Welcome to " + currentPage;
+            
+            // Enable/Disable buttons based on stack size
+            backBtn.disabled = backStack.length === 0;
+            forwardBtn.disabled = forwardStack.length === 0;
         }
 
-        // ===== FUNCTION: UPDATE BUTTON STATES =====
-        function updateButtons() {
-            // Undo button is enabled only if undoStack has items
-            undoBtn.disabled = undoStack.length === 0;
+        // ==========================================
+        // 3. LOGIC: VISIT NEW PAGE
+        // ==========================================
+        addressBar.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                const newPage = addressBar.value.trim();
+                
+                if (newPage === "" || newPage === currentPage) return;
 
-            // Redo button is enabled only if redoStack has items
-            redoBtn.disabled = redoStack.length === 0;
-        }
-
-        // ===== EVENT: USER TYPES IN THE TEXTAREA =====
-        editor.addEventListener("input", function () {
-            // Save the previous state (before this input)
-            if (lastState !== editor.value) {
-                undoStack.push(lastState);
-                redoStack.length = 0; // Clear redo on new input
-                lastState = editor.value;
-            }
-
-            // Update counters and buttons
-            updateCounters();
-            updateButtons();
-        });
-
-        // ===== EVENT: UNDO BUTTON CLICK =====
-        undoBtn.addEventListener("click", function () {
-            // Check if there is anything to undo
-            if (undoStack.length > 0) {
-                // Step 1: Push current text onto redo stack
-                redoStack.push(editor.value);
-
-                // Step 2: Pop the last state from undo stack
-                const previousState = undoStack.pop();
-
-                // Step 3: Restore the previous state
-                editor.value = previousState;
-                lastState = previousState;
-
-                // Step 4: Update counters and buttons
-                updateCounters();
-                updateButtons();
+                // Push current page to Back Stack
+                backStack.push(currentPage);
+                
+                // Update current page
+                currentPage = newPage;
+                
+                // Clear Forward Stack (new timeline)
+                forwardStack.length = 0;
+                
+                updateUI();
             }
         });
 
-        // ===== EVENT: REDO BUTTON CLICK =====
-        redoBtn.addEventListener("click", function () {
-            // Check if there is anything to redo
-            if (redoStack.length > 0) {
-                // Step 1: Push current text onto undo stack
-                undoStack.push(editor.value);
-
-                // Step 2: Pop the last undone state from redo stack
-                const nextState = redoStack.pop();
-
-                // Step 3: Restore the next state
-                editor.value = nextState;
-                lastState = nextState;
-
-                // Step 4: Update counters and buttons
-                updateCounters();
-                updateButtons();
+        // ==========================================
+        // 4. LOGIC: BACK BUTTON
+        // ==========================================
+        backBtn.addEventListener("click", function() {
+            if (backStack.length > 0) {
+                // 1. Push current page to Forward Stack
+                forwardStack.push(currentPage);
+                
+                // 2. Pop from Back Stack to get the previous page
+                currentPage = backStack.pop();
+                
+                // 3. Update Address Bar and UI
+                addressBar.value = currentPage;
+                updateUI();
             }
         });
 
-        // ===== EVENT: CLEAR BUTTON CLICK =====
-        clearBtn.addEventListener("click", function () {
-            // Save current state to undo stack so it can be undone
-            if (editor.value !== "") {
-                undoStack.push(editor.value);
-            }
-
-            // Clear the editor
-            editor.value = "";
-
-            // Clear redo stack
-            redoStack.length = 0;
-
-            // Update last state
-            lastState = "";
-
-            // Update counters and buttons
-            updateCounters();
-            updateButtons();
-        });
-
-        // ===== KEYBOARD SHORTCUTS =====
-        document.addEventListener("keydown", function (event) {
-            // Ctrl+Z → Undo
-            if (event.ctrlKey && event.key === "z") {
-                event.preventDefault(); // Prevent default browser undo
-                undoBtn.click();
-            }
-
-            // Ctrl+Y → Redo
-            if (event.ctrlKey && event.key === "y") {
-                event.preventDefault(); // Prevent default browser redo
-                redoBtn.click();
+        // ==========================================
+        // 5. LOGIC: FORWARD BUTTON
+        // ==========================================
+        forwardBtn.addEventListener("click", function() {
+            if (forwardStack.length > 0) {
+                // 1. Push current page to Back Stack
+                backStack.push(currentPage);
+                
+                // 2. Pop from Forward Stack to get the next page
+                currentPage = forwardStack.pop();
+                
+                // 3. Update Address Bar and UI
+                addressBar.value = currentPage;
+                updateUI();
             }
         });
-
-        // ===== INITIAL SETUP =====
-        updateCounters();
-        updateButtons();
     </script>
 </body>
 </html>
